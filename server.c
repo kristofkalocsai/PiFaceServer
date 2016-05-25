@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <wiringPi.h>
 
 #define error_handler(eN, msg)\
     do {errno = eN; perror(msg); exit(EXIT_FAILURE); } while(0)
@@ -66,6 +67,9 @@ void process_read(int csock)
 //  printf("RECEIVED %d CHAR\n", len);
   if (len > 0) {
 //	  ide kell irni a kiszolgalast
+
+
+
       for (i = 1; i <= MAXCONNS ; i++) {
           // send only for connected clients, do not send message back to sender
           if ((poll_list[i].fd != -1) && (poll_list[i].fd != csock)) {
