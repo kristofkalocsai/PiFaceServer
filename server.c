@@ -29,8 +29,7 @@
 int ssock;
 struct pollfd poll_list[MAXCONNS + 1];
 
-void handle_new_connection()
-{
+void handle_new_connection() {
   // TODO: bejövő kapcsolat kezelése
   // Ha van üres hely a tömbben, akkor oda tesszük egyébként visszautasítjuk.
   int csock, i;
@@ -56,9 +55,7 @@ void handle_new_connection()
 
 }
 
-void process_read(int csock)
-{
-  // TODO: beolvassuk a szöveget és szétküldjük a többieknek
+void process_read(int csock) {
   char buf[256];
   int len;
   int i;
@@ -66,19 +63,34 @@ void process_read(int csock)
   len = recv(csock, buf, sizeof(buf), 0);
 //  printf("RECEIVED %d CHAR\n", len);
   if (len > 0) {
-//	  ide kell irni a kiszolgalast
+//	 TODO service routine
+	//	for (i = 0; i < sizeof(buf); ++i) {
+	//		printf("0x%02X ",buf[i]);
+	//	}
+	//	printf("\n\n");
+//	printf("%d %d %d\n", buf[0],buf[1],buf[2]);
+	switch (buf[0]) {
+		case 0x41: // A: set pin mode
+//			printf("setting pin: %d to mode: %s\n", (buf[1]-0x30), ( (buf[2]-0x30)==0) ? "OUTPUT" : ((buf[2]-0x30)==1) ? "INPUT" : "INPUT" );
+			pinMode((buf[1]-0x30), ((buf[2]-0x30)==0) ? OUTPUT : ((buf[2]-0x30)==1) ? INPUT : INPUT);
+			break;
+		case 0x42: // B: set pin level
+
+			break;
+		default:
+			break;
+	}
 
 
-
-      for (i = 1; i <= MAXCONNS ; i++) {
-          // send only for connected clients, do not send message back to sender
-          if ((poll_list[i].fd != -1) && (poll_list[i].fd != csock)) {
-              if(send(poll_list[i].fd, buf, len , 0) < 0){
-                  perror("send");
-              }
-
-          }
-      }
+//      for (i = 1; i <= MAXCONNS ; i++) {
+//          // send only for connected clients, do not send message back to sender
+//          if ((poll_list[i].fd != -1) && (poll_list[i].fd != csock)) {
+//              if(send(poll_list[i].fd, buf, len , 0) < 0){
+//                  perror("send");
+//              }
+//
+//          }
+//      }
   }
 }
 
@@ -136,6 +148,9 @@ int main(void){
 
     struct sockaddr_in6 addr;
     int reuse, i, ii;
+
+    printf("initializing wiringPi...\n");
+	wiringPiSetup();
 
     printf("opening socket\n");
     eN = (ssock = socket(PF_INET6, SOCK_STREAM, 0));
