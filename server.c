@@ -39,7 +39,7 @@ void handle_new_connection() {
       return;
   }
   printf("INCOMING CONNECTION\n");
-  for (i = 0; i < MAXCONNS+1; i++) {
+  for (i = 1; i < MAXCONNS+1; i++) {
       if (poll_list[i].fd < 0) {
           // van ures hely
           printf("ASSIGNING %d. PLACE TO CLIENT %d\n", i, csock);
@@ -98,6 +98,11 @@ void process_read(int csock) {
 			if(send(csock, &mode, 1 , 0) < 0){ // a single byte is sufficient
 			  perror("send");
 			}
+			break;
+		case 0x58: //X: close conn
+			printf("closing conn no:%d\n",csock);
+			close(csock);
+			poll_list[1].fd = -1;
 			break;
 
 		default:
@@ -213,21 +218,20 @@ int main(void){
 
 
 	while(1){
-	    if (poll(poll_list, MAXCONNS+1, -1) > 0) {
-	        if (poll_list[0].revents & POLLIN) {
-	        	printf("NEW CONNECTION\n");
-	            handle_new_connection();
-	        }
-	        for (ii = 0; ii < MAXCONNS+1; ii++) {
-	            if (poll_list[ii].revents & (POLLERR | POLLHUP)) {
-	            	close(poll_list[ii].fd);
-	                poll_list[ii].fd = -1;
-	            }
-	            else if(poll_list[ii].revents & POLLIN) {
-	            	process_read(poll_list[ii].fd);
-	            }
-	        }
+	    if(poll(poll_list, MAXCONNS + 1, -1) > 0){
+	    	if(poll_list[0].revents & POLLIN){
+	    		handle_new_connection();
+	    	}
 
+	    	for(i = 1; i <= MAXCONNS; i++){
+	    		if(poll_list[i].revents & (POLLERR | POLLHUP)){
+	    			close(poll_list[i].fd);
+	    			poll_list[i].fd = -1;
+	    		}
+	    		else if(poll_list[i].revents & POLLIN){
+	    			process_read(poll_list[i].fd);
+	    		}
+	    	}
 	    }
 	}
 
