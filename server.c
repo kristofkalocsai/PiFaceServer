@@ -58,7 +58,7 @@ void handle_new_connection() {
 void process_read(int csock) {
   char buf[256];
   int len;
-  int i;
+  int i,lvl,mode;
 
   len = recv(csock, buf, sizeof(buf), 0);
 //  printf("RECEIVED %d CHAR\n", len);
@@ -71,12 +71,35 @@ void process_read(int csock) {
 //	printf("%d %d %d\n", buf[0],buf[1],buf[2]);
 	switch (buf[0]) {
 		case 0x41: // A: set pin mode
-//			printf("setting pin: %d to mode: %s\n", (buf[1]-0x30), ( (buf[2]-0x30)==0) ? "OUTPUT" : ((buf[2]-0x30)==1) ? "INPUT" : "INPUT" );
+			printf("setting pin: %d to mode: %s\n", (buf[1]-0x30), ( (buf[2]-0x30)==0) ? "OUTPUT" : ((buf[2]-0x30)==1) ? "INPUT" : "ERROR" );
+//			TODO hibakezeles es sanitizing
 			pinMode((buf[1]-0x30), ((buf[2]-0x30)==0) ? OUTPUT : ((buf[2]-0x30)==1) ? INPUT : INPUT);
 			break;
-		case 0x42: // B: set pin level
 
+		case 0x42: // B: set pin level
+			printf("writing to pin: %d level: %s\n", (buf[1]-0x30), ( (buf[2]-0x30)==0) ? "LOW" : ((buf[2]-0x30)==1) ? "HIGH" : "ERROR" );
+//			TODO hibakezeles es sanitizing
+			digitalWrite((buf[1]-0x30), ((buf[2]-0x30)==0) ? LOW : ((buf[2]-0x30)==1) ? HIGH : LOW);
 			break;
+
+		case 0x43: // C: read pin level
+//			TODO hibakezeles es sanitizing
+			lvl = digitalRead((buf[1]-0x30));
+			printf("reading pin: %d level: %s\n", (buf[1]-0x30), (lvl ? "HIGH" : "LOW") );
+			if(send(csock, &mode, 1 , 0) < 0){ // a single byte is sufficient
+			  perror("send");
+			}
+			break;
+
+		case 0x44: //D: read pin mode
+//			TODO hibakezeles es sanitizing
+			mode = getAlt((buf[1]-0x30));
+			printf("reading pin: %d mode: %s\n", (buf[1]-0x30), (mode ? "OUTPUT" : "INPUT") );
+			if(send(csock, &mode, 1 , 0) < 0){ // a single byte is sufficient
+			  perror("send");
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -190,10 +213,7 @@ int main(void){
 
 
 	while(1){
-	    // TODO: poll
 	    if (poll(poll_list, MAXCONNS+1, -1) > 0) {
-	        // TODO: az események feldolgozása és a lekezelő függvények meghívása
-	        // jott esemeny
 	        if (poll_list[0].revents & POLLIN) {
 	        	printf("NEW CONNECTION\n");
 	            handle_new_connection();
