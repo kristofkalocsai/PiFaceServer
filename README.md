@@ -11,6 +11,7 @@
 Az alkalmazás inicializálja a wiringPi perifériakönyvtárat, ezután egy létrehoz es poll-listát és egy socketet, amely a 3344 -es porton hallgatózik. Majd végtelen ciklusban figyeli a bejövő kapcsolatokat, és kiszolgálja azokat.
 
 ## Kiszolgálás:
+
 ```c
 void handle_new_connection()```
 
