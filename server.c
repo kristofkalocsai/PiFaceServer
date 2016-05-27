@@ -86,7 +86,7 @@ void process_read(int csock) {
 //			TODO hibakezeles es sanitizing
 			lvl = digitalRead((buf[1]-0x30));
 			printf("reading pin: %d level: %s\n", (buf[1]-0x30), (lvl ? "HIGH" : "LOW") );
-			if(send(csock, &mode, 1 , 0) < 0){ // a single byte is sufficient
+			if(send(csock, &lvl, 1 , 0) < 0){ // a single byte is sufficient
 			  perror("send");
 			}
 			break;
@@ -97,6 +97,22 @@ void process_read(int csock) {
 			printf("reading pin: %d mode: %s\n", (buf[1]-0x30), (mode ? "OUTPUT" : "INPUT") );
 			if(send(csock, &mode, 1 , 0) < 0){ // a single byte is sufficient
 			  perror("send");
+			}
+			break;
+
+		case 0x59: //Y: read all
+			printf("reading all pins\n");
+			for (i = 0; i <= 31; ++i) {
+				mode = getAlt(i);
+				printf("GPIO: %d MODE: %s ",i,(mode ? "OUTPUT" : "INPUT"));
+				if(send(csock, &mode, 1, 0) < 0){
+					perror("send");
+				}
+				lvl = digitalRead(i);
+				printf("LVL: %s\n",(lvl ? "HIGH" : "LOW"));
+				if(send(csock, &lvl, 1, 0) < 0){
+					perror("send");
+				}
 			}
 			break;
 		case 0x58: //X: close conn
