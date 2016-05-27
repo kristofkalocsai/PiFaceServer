@@ -12,15 +12,13 @@ Az alkalmazás inicializálja a wiringPi perifériakönyvtárat, ezután egy lé
 
 ## Kiszolgálás:
 
-```c
-void handle_new_connection()```
+`void handle_new_connection()`
 
 Ha nincs eddigi kapcsolat, az újonnan beérkező hívást a poll-listába teszi.
 
 Ha már csatlakozott valaki, a bejövő kapcsolatot visszautasítja, és visszatér.
 
-```c
-void process_read(int csock)```
+`void process_read(int csock)`
 
 Ha a poll listából POLLIN érkezik a bejövő kapcsolaton, fogadja és feldolgozza az adatokat, illetve válaszol a kérésekre.
 A kérések formátuma: `XYZ\n`, ahol X a következő részben tárgyalt módok egyike, Y a GPIO lábnak megfelelő szám ASCII-ben, Z pedig a kívánt jelszint/lábfunkció
